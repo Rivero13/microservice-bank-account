@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: microservice-bank-account
+  cloud:
+    config:
+      uri: http://localhost:8888
+      username: jair
+      password: jair123
