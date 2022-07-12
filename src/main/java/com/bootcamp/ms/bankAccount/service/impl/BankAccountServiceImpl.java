@@ -43,4 +43,9 @@ public class BankAccountServiceImpl implements BankAccountService {
     public Mono<Double> checkBalance(String id) {
         return bankAccountRepository.findById(id).map(BankAccount::getAmount);
     }
+
+    @Override
+    public Mono<Integer> consultMovements(String id) {
+        return bankAccountRepository.findById(id).map(BankAccount::getMaxMovement);
+    }
 }

@@ -12,7 +12,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/bankAccount")
 public class BankAccountController {
 
     @Autowired
@@ -61,7 +60,21 @@ public class BankAccountController {
                             logger.info("estoy en el segundo if");
                             return bankAccountService.save(bankAccount);
                         }
-                    }else{
+                    }
+                    else if(c.getType().equalsIgnoreCase("vip")){
+                        if(bankAccount.getType().equalsIgnoreCase("ahorro")){
+                            if(bankAccount.getAmount() > 500){
+                                return bankAccountService.save(bankAccount);
+                            }
+                        }
+                    }
+                    else if(c.getType().equalsIgnoreCase("pyme")){
+                        if(bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
+                            bankAccount.setMaintenanceFee(0.0);
+                            return bankAccountService.save(bankAccount);
+                        }
+                    }
+                    else{
                         if(bankAccount.getType().equalsIgnoreCase("cuentas corrientes")){
                             return bankAccountService.save(bankAccount);
                         }
@@ -132,4 +145,37 @@ public class BankAccountController {
         return bankAccountService.checkBalance(id);
     }
 
+    @GetMapping(value = "/consultMovements/{id}")
+    public Mono<Integer> consultMovements(@PathVariable String id){
+        return bankAccountService.consultMovements(id);
+    }
+
+    @PutMapping(value = "/transfer/{id}/{amount}/{idDestination}")
+    public Mono<BankAccount> transfer(@PathVariable String id, @PathVariable double amount, @PathVariable String idDestination){
+
+        return bankAccountService.findById(id)
+                .flatMap(b -> {
+                   Double currentAmount = b.getAmount();
+                   Integer currentMovement = b.getMaxMovement();
+
+                   if(currentAmount > amount){
+                       currentAmount -= amount;
+                       b.setAmount(currentAmount);
+
+                       if(currentMovement > 0){
+                           currentMovement -= 1;
+                           b.setMaxMovement(currentMovement);
+                       }
+
+                       bankAccountService.findById(idDestination)
+                               .flatMap(b1 -> {
+                                   Double currentAmountDestination = b1.getAmount() + amount;
+                                   b1.setAmount(currentAmountDestination);
+                                   return bankAccountService.save(b1);
+                               }).subscribe();
+                   }
+
+                   return bankAccountService.save(b);
+                });
+    }
 }

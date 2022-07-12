@@ -12,4 +12,5 @@ public interface BankAccountService {
     Mono<BankAccount> save(BankAccount bankAccount);
     Mono<Void> delete(BankAccount bankAccount);
     Mono<Double> checkBalance(String id);
+    Mono<Integer> consultMovements(String id);
 }
