@@ -4,9 +4,13 @@ import com.bootcamp.ms.bankAccount.service.BankAccountService;
 import com.bootcamp.ms.bankAccount.service.ClientService;
 import com.bootcamp.ms.bankAccount.service.ProductBankService;
 import com.bootcamp.ms.commons.entity.BankAccount;
+import com.bootcamp.ms.commons.entity.ProductBank;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,11 +27,25 @@ public class BankAccountController {
     @Autowired
     private ClientService clientService;
 
+    private static final String PRODUCT_BANK_INFO_SERVICE = "productBankInfo";
+
     private final Logger logger = LoggerFactory.getLogger(BankAccountController.class);
+
+    private static final String CUSTOMER_CONTACT_INFO_SERVICE = "customerContactInfoService";
 
     @GetMapping("/all")
     public Flux<BankAccount> getAll(){
         return bankAccountService.findAll();
+    }
+
+    @GetMapping("/allProductBank")
+    @CircuitBreaker(name = CUSTOMER_CONTACT_INFO_SERVICE, fallbackMethod = "customerContactInfoFallback")
+    public Flux<ProductBank> getAllProductBank(){
+        return productBankService.findAll();
+    }
+
+    public ResponseEntity<String> customerContactInfoFallback(Exception e) {
+        return new ResponseEntity<String>("GET: Customer contact info endpoint is not available right now.", HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -41,47 +59,47 @@ public class BankAccountController {
     }
 
     @PostMapping("/create")
-    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
-        productBankService.find(bankAccount.getIdProduct())
-                        .flatMap(p -> {
-                            logger.info(p.getDescription());
-                            bankAccount.setProductBank(p);
-                            return Mono.empty();
-                        }).subscribe();
-
-        return clientService.find(bankAccount.getIdClient())
-                .flatMap(c -> {
-                    bankAccount.setClient(c);
-                    bankAccount.maintenanceFee(bankAccount.getType());
-                    logger.info(c.getFirstName());
-
-                    if(c.getType().equalsIgnoreCase("personal")){
-                        if(bankAccount.getType().equalsIgnoreCase("ahorro") || bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
-                            logger.info("estoy en el segundo if");
-                            return bankAccountService.save(bankAccount);
-                        }
-                    }
-                    else if(c.getType().equalsIgnoreCase("vip")){
-                        if(bankAccount.getType().equalsIgnoreCase("ahorro")){
-                            if(bankAccount.getAmount() > 500){
-                                return bankAccountService.save(bankAccount);
-                            }
-                        }
-                    }
-                    else if(c.getType().equalsIgnoreCase("pyme")){
-                        if(bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
-                            bankAccount.setMaintenanceFee(0.0);
-                            return bankAccountService.save(bankAccount);
-                        }
-                    }
-                    else{
-                        if(bankAccount.getType().equalsIgnoreCase("cuentas corrientes")){
-                            return bankAccountService.save(bankAccount);
-                        }
-                    }
-                    return Mono.empty();
-                });
-    }
+//    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
+//        productBankService.find(bankAccount.getIdProduct())
+//                        .flatMap(p -> {
+//                            logger.info(p.getDescription());
+//                            bankAccount.setProductBank(p);
+//                            return Mono.empty();
+//                        }).subscribe();
+//
+//        return clientService.find(bankAccount.getIdClient())
+//                .flatMap(c -> {
+//                    bankAccount.setClient(c);
+//                    bankAccount.maintenanceFee(bankAccount.getType());
+//                    logger.info(c.getFirstName());
+//
+//                    if(c.getType().equalsIgnoreCase("personal")){
+//                        if(bankAccount.getType().equalsIgnoreCase("ahorro") || bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
+//                            logger.info("estoy en el segundo if");
+//                            return bankAccountService.save(bankAccount);
+//                        }
+//                    }
+//                    else if(c.getType().equalsIgnoreCase("vip")){
+//                        if(bankAccount.getType().equalsIgnoreCase("ahorro")){
+//                            if(bankAccount.getAmount() > 500){
+//                                return bankAccountService.save(bankAccount);
+//                            }
+//                        }
+//                    }
+//                    else if(c.getType().equalsIgnoreCase("pyme")){
+//                        if(bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
+//                            bankAccount.setMaintenanceFee(0.0);
+//                            return bankAccountService.save(bankAccount);
+//                        }
+//                    }
+//                    else{
+//                        if(bankAccount.getType().equalsIgnoreCase("cuentas corrientes")){
+//                            return bankAccountService.save(bankAccount);
+//                        }
+//                    }
+//                    return Mono.empty();
+//                });
+//    }
 
     @PutMapping("/{id}")
     public Mono<BankAccount> updateBankAccount(@PathVariable String id, @RequestBody BankAccount bankAccount){

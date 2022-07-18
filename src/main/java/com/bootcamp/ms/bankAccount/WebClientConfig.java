@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
     @Bean
-    public WebClient registrarWebClient(){
-        return WebClient.create();
+    public WebClient.Builder registrarWebClient(){
+        return WebClient.builder();
     }
 }

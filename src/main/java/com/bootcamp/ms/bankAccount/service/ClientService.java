@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 public interface ClientService {
 
-    Flux<Client> getAll();
-
-    Mono<Client> find(String id);
+//    Flux<Client> getAll();
+//
+//    Mono<Client> find(String id);
 }
