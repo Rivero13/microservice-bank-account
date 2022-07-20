@@ -41,14 +41,21 @@ public class ProductBankServiceImpl implements ProductBankService {
 //                .flatMapMany(response -> response.bodyToFlux(ProductBank.class));
     }
 
-//    @Override
-//    public Mono<ProductBank> find(String id) {
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("id", id);
-//
+    @Override
+    public Mono<ProductBank> find(String id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        return client.baseUrl(productBankConfig.getUrl())
+                .build()
+                .get()
+                .uri("/{id}", params)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(ProductBank.class);
 //        return client.get()
 //                .uri(productBankConfig.getUrl().concat("/{id}"), params)
 //                .accept(MediaType.APPLICATION_JSON)
 //                .exchangeToMono(response -> response.bodyToMono(ProductBank.class));
-//    }
+    }
 }

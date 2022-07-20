@@ -9,5 +9,5 @@ public interface ProductBankService {
 
     Flux<ProductBank> findAll();
 
-    //Mono<ProductBank> find(@PathVariable String id);
+    Mono<ProductBank> find(@PathVariable String id);
 }
