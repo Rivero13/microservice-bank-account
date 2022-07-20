@@ -26,11 +26,7 @@ public class BankAccountController {
     @Autowired
     private ClientService clientService;
 
-    private static final String PRODUCT_BANK_INFO_SERVICE = "productBankInfo";
-
     private final Logger logger = LoggerFactory.getLogger(BankAccountController.class);
-
-    private static final String CUSTOMER_CONTACT_INFO_SERVICE = "customerContactInfoService";
 
     @GetMapping("/all")
     public Flux<BankAccount> getAll(){
@@ -53,47 +49,50 @@ public class BankAccountController {
     }
 
     @PostMapping("/create")
-//    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
+    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
 //        productBankService.find(bankAccount.getIdProduct())
 //                        .flatMap(p -> {
 //                            logger.info(p.getDescription());
 //                            bankAccount.setProductBank(p);
 //                            return Mono.empty();
 //                        }).subscribe();
-//
-//        return clientService.find(bankAccount.getIdClient())
-//                .flatMap(c -> {
-//                    bankAccount.setClient(c);
-//                    bankAccount.maintenanceFee(bankAccount.getType());
-//                    logger.info(c.getFirstName());
-//
-//                    if(c.getType().equalsIgnoreCase("personal")){
-//                        if(bankAccount.getType().equalsIgnoreCase("ahorro") || bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
-//                            logger.info("estoy en el segundo if");
-//                            return bankAccountService.save(bankAccount);
-//                        }
-//                    }
-//                    else if(c.getType().equalsIgnoreCase("vip")){
-//                        if(bankAccount.getType().equalsIgnoreCase("ahorro")){
-//                            if(bankAccount.getAmount() > 500){
-//                                return bankAccountService.save(bankAccount);
-//                            }
-//                        }
-//                    }
-//                    else if(c.getType().equalsIgnoreCase("pyme")){
-//                        if(bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
-//                            bankAccount.setMaintenanceFee(0.0);
-//                            return bankAccountService.save(bankAccount);
-//                        }
-//                    }
-//                    else{
-//                        if(bankAccount.getType().equalsIgnoreCase("cuentas corrientes")){
-//                            return bankAccountService.save(bankAccount);
-//                        }
-//                    }
-//                    return Mono.empty();
-//                });
-//    }
+
+        productBankService.find(bankAccount.getIdProduct())
+                .subscribe(bankAccount::setProductBank);
+
+        return clientService.find(bankAccount.getIdClient())
+                .flatMap(c -> {
+                    bankAccount.setClient(c);
+                    bankAccount.maintenanceFee(bankAccount.getType());
+                    logger.info(c.getFirstName());
+
+                    if(c.getType().equalsIgnoreCase("personal")){
+                        if(bankAccount.getType().equalsIgnoreCase("ahorro") || bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
+                            logger.info("estoy en el segundo if");
+                            return bankAccountService.save(bankAccount);
+                        }
+                    }
+                    else if(c.getType().equalsIgnoreCase("vip")){
+                        if(bankAccount.getType().equalsIgnoreCase("ahorro")){
+                            if(bankAccount.getAmount() > 500){
+                                return bankAccountService.save(bankAccount);
+                            }
+                        }
+                    }
+                    else if(c.getType().equalsIgnoreCase("pyme")){
+                        if(bankAccount.getType().equalsIgnoreCase("cuenta corriente")){
+                            bankAccount.setMaintenanceFee(0.0);
+                            return bankAccountService.save(bankAccount);
+                        }
+                    }
+                    else{
+                        if(bankAccount.getType().equalsIgnoreCase("cuentas corrientes")){
+                            return bankAccountService.save(bankAccount);
+                        }
+                    }
+                    return Mono.empty();
+                });
+    }
 
     @PutMapping("/{id}")
     public Mono<BankAccount> updateBankAccount(@PathVariable String id, @RequestBody BankAccount bankAccount){
