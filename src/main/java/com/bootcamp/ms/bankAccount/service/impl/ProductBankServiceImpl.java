@@ -1,10 +1,8 @@
 package com.bootcamp.ms.bankAccount.service.impl;
 
 import com.bootcamp.ms.bankAccount.ProductBankConfig;
-import com.bootcamp.ms.bankAccount.controller.BankAccountController;
 import com.bootcamp.ms.bankAccount.service.ProductBankService;
 import com.bootcamp.ms.commons.entity.ProductBank;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
@@ -16,7 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +31,6 @@ public class ProductBankServiceImpl implements ProductBankService {
     private final ReactiveCircuitBreakerFactory reactiveCircuitBreakerFactory;
 
     @Override
-    @Retry(name = "throwingException", fallbackMethod = "localCacheProductBank")
     public Flux<ProductBank> findAll() {
         System.out.println(" Making a request to " + productBankConfig.getUrl() + " at :" + LocalDateTime.now());
         return client.baseUrl(productBankConfig.getUrl())
@@ -75,9 +71,6 @@ public class ProductBankServiceImpl implements ProductBankService {
 //                .exchangeToMono(response -> response.bodyToMono(ProductBank.class));
 //    }
 
-    private Flux<ProductBank> localCacheProductBank() {
-        // fetch results from the cache
-        return Flux.just(new ProductBank("3","cache Product bank"));
     }
 
     private Flux<ProductBank> fallbackProductBank() {
