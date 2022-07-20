@@ -6,11 +6,10 @@ import com.bootcamp.ms.bankAccount.service.ProductBankService;
 import com.bootcamp.ms.commons.entity.BankAccount;
 import com.bootcamp.ms.commons.entity.ProductBank;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,11 +26,7 @@ public class BankAccountController {
     @Autowired
     private ClientService clientService;
 
-    private static final String PRODUCT_BANK_INFO_SERVICE = "productBankInfo";
-
     private final Logger logger = LoggerFactory.getLogger(BankAccountController.class);
-
-    private static final String CUSTOMER_CONTACT_INFO_SERVICE = "customerContactInfoService";
 
     @GetMapping("/all")
     public Flux<BankAccount> getAll(){
@@ -39,13 +34,8 @@ public class BankAccountController {
     }
 
     @GetMapping("/allProductBank")
-    @CircuitBreaker(name = CUSTOMER_CONTACT_INFO_SERVICE, fallbackMethod = "customerContactInfoFallback")
     public Flux<ProductBank> getAllProductBank(){
         return productBankService.findAll();
-    }
-
-    public ResponseEntity<String> customerContactInfoFallback(Exception e) {
-        return new ResponseEntity<String>("GET: Customer contact info endpoint is not available right now.", HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -58,25 +48,17 @@ public class BankAccountController {
         return bankAccountService.searchBankAccountByTypeAndIdClient(type, clientId);
     }
 
-    public Mono<BankAccount> create(@RequestBody BankAccount bankAccount){
+    @PostMapping("/create")
+    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
+//        productBankService.find(bankAccount.getIdProduct())
+//                        .flatMap(p -> {
+//                            logger.info(p.getDescription());
+//                            bankAccount.setProductBank(p);
+//                            return Mono.empty();
+//                        }).subscribe();
 
         productBankService.find(bankAccount.getIdProduct())
                 .subscribe(bankAccount::setProductBank);
-
-        return bankAccountService.save(bankAccount)
-                .map(b -> {
-                    return b;
-                });
-    }
-
-    @PostMapping("/create")
-    public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
-        productBankService.find(bankAccount.getIdProduct())
-                        .flatMap(p -> {
-                            logger.info(p.getDescription());
-                            bankAccount.setProductBank(p);
-                            return Mono.empty();
-                        }).subscribe();
 
         return clientService.find(bankAccount.getIdClient())
                 .flatMap(c -> {
