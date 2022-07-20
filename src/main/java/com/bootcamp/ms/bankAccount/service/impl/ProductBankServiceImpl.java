@@ -1,14 +1,11 @@
 package com.bootcamp.ms.bankAccount.service.impl;
 
-
 import com.bootcamp.ms.bankAccount.ProductBankConfig;
 import com.bootcamp.ms.bankAccount.controller.BankAccountController;
 import com.bootcamp.ms.bankAccount.service.ProductBankService;
 import com.bootcamp.ms.commons.entity.ProductBank;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.time.LocalDateTime;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
@@ -72,8 +73,6 @@ public class ProductBankServiceImpl implements ProductBankService {
 //                .uri(productBankConfig.getUrl().concat("/{id}"), params)
 //                .accept(MediaType.APPLICATION_JSON)
 //                .exchangeToMono(response -> response.bodyToMono(ProductBank.class));
-<<<<<<< HEAD
-=======
 //    }
 
     private Flux<ProductBank> localCacheProductBank() {
@@ -84,6 +83,5 @@ public class ProductBankServiceImpl implements ProductBankService {
     private Flux<ProductBank> fallbackProductBank() {
         // fetch results from the cache
         return Flux.just(new ProductBank("0","Error product bank"));
->>>>>>> cb140d387c1e234150f819bd4ed08689edd0e771
     }
 }
