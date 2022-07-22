@@ -8,11 +8,17 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Service
 public class BankAccountServiceImpl implements BankAccountService {
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
+
+    public BankAccountServiceImpl(BankAccountRepository bankAccountRepository) {
+        this.bankAccountRepository = bankAccountRepository;
+    }
 
     @Override
     public Mono<BankAccount> searchBankAccountByTypeAndIdClient(String type, String idClient) {
@@ -47,5 +53,13 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public Mono<Integer> consultMovements(String id) {
         return bankAccountRepository.findById(id).map(BankAccount::getMaxMovement);
+    }
+
+    @Override
+    public Optional<BankAccount> findByIdClient(String id) {
+        return bankAccountRepository.findAll()
+                .toStream()
+                .filter(b -> b.getIdClient().contains(id))
+                .findFirst();
     }
 }
