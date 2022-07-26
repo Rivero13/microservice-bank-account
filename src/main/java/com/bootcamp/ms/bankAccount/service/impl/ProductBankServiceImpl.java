@@ -40,10 +40,11 @@ public class ProductBankServiceImpl implements ProductBankService {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToFlux(ProductBank.class)
-                .transform(it -> {
-                    ReactiveCircuitBreaker rcb = reactiveCircuitBreakerFactory.create("customer-service");
-                    return rcb.run(it, throwable -> fallbackProductBank());
-                });
+//                .transform(it -> {
+//                    ReactiveCircuitBreaker rcb = reactiveCircuitBreakerFactory.create("customer-service");
+//                    return rcb.run(it, throwable -> fallbackProductBank());
+//                });}
+        ;
 
 //        return client
 //                //.baseUrl(productBankConfig.getUrl())

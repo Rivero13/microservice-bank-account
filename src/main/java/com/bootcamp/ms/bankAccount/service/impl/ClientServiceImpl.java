@@ -17,44 +17,28 @@ import java.util.Map;
 public class ClientServiceImpl implements ClientService {
 
     @Autowired
-    private WebClient.Builder client;
+    private WebClient client;
 
     @Autowired
     private ClientConfig clientConfig;
 
     @Override
     public Flux<Client> getAll() {
-        return client.baseUrl(clientConfig.getUrl())
-                .build()
-                .get()
-                .uri("/all")
+        return client.get().uri(clientConfig.getUrl().concat("/all"))
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToFlux(Client.class);
-
-//        return client.get().uri(clientConfig.getUrl().concat("/all"))
-//                .accept(MediaType.APPLICATION_JSON)
-//                .exchange()
-//                .flatMapMany(response -> response.bodyToFlux(Client.class));
+                .exchange()
+                .flatMapMany(response -> response.bodyToFlux(Client.class));
     }
 
     @Override
-    public Mono<Client> find(String id) {
+    public Mono<Client> findById(String id) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("id", id);
 
-        return client.baseUrl(clientConfig.getUrl())
-                .build()
-                .get()
-                .uri("/{id}", params)
+        return client.get()
+                .uri(clientConfig.getUrl().concat("/{id}"), params)
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Client.class);
-
-//        return client.get()
-//                .uri(clientConfig.getUrl().concat("/{id}"), params)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .exchangeToMono(response -> response.bodyToMono(Client.class));
+                .exchangeToMono(response -> response.bodyToMono(Client.class));
     }
 }

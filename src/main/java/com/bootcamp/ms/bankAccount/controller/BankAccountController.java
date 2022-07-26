@@ -50,17 +50,14 @@ public class BankAccountController {
 
     @PostMapping("/create")
     public Mono<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount){
-//        productBankService.find(bankAccount.getIdProduct())
-//                        .flatMap(p -> {
-//                            logger.info(p.getDescription());
-//                            bankAccount.setProductBank(p);
-//                            return Mono.empty();
-//                        }).subscribe();
-
         productBankService.find(bankAccount.getIdProduct())
-                .subscribe(bankAccount::setProductBank);
+                        .flatMap(p -> {
+                            logger.info(p.getDescription());
+                            bankAccount.setProductBank(p);
+                            return Mono.empty();
+                        }).subscribe();
 
-        return clientService.find(bankAccount.getIdClient())
+        return clientService.findById(bankAccount.getIdClient())
                 .flatMap(c -> {
                     bankAccount.setClient(c);
                     bankAccount.maintenanceFee(bankAccount.getType());
